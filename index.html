@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -15,22 +15,14 @@
 </head>
 
 <body>
-    <div id="app">
-        <div id="content">
-            <div id="title">
-                <p>United States GDP</p>
-            </div>
-            <svg id="chart">
-            </svg>
-            <div id="tooltip">
-                <p id="gdp"><span></span> Billion</p>
-                <p id="date"><span id="month"></span>-<span id="year"></span></p>
-            </div>
-            <div id="unit">
-                <p></p>
-            </div>
-        </div>
+    <h1 id="title">United States GDP</h1>
+    <svg id="chart">
+
+    </svg>
+    <div id="tooltip">
+
     </div>
+    <p id="footer"></p>
     <script src="main.js"></script>
 </body>
 

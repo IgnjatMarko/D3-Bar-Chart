@@ -1,68 +1,83 @@
-d3.json('https://raw.githubusercontent.com/FreeCodeCamp/ProjectReferenceData/master/GDP-data.json', function(err, data) {
-    var margin = { top: 20, right: 30, bottom: 30, left: 40 },
-        width = 895 - margin.left - margin.right,
-        height = 550 - margin.top - margin.bottom;
+d3.json(
+  "https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/GDP-data.json"
+).then((data) => {
+  const dataset = data.data;
 
-    var y = d3.scaleLinear().range([height, 0]);
-    var x = d3.scaleTime().domain([new Date(data.data[0][0]), new Date(data.data[data.data.length - 1][0])]).range([0, width]);
+  const margin = { top: 20, right: 20, bottom: 70, left: 70 };
+  const width = 800 - margin.left - margin.right;
+  const height = 400 - margin.top - margin.bottom;
 
-    var chart = d3.select("#chart")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.left + margin.right)
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  const svg = d3
+    .select("#chart")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    y.domain([0, data.data[data.data.length - 1][1]]);
+  const xScale = d3
+    .scaleTime()
+    .domain([
+      new Date(d3.min(dataset, (d) => d[0])),
+      new Date(d3.max(dataset, (d) => d[0])),
+    ])
+    .range([0, width]);
 
-    var barWidth = width / data.data.length;
+  const yScale = d3
+    .scaleLinear()
+    .domain([0, d3.max(dataset, (d) => d[1])])
+    .range([height, 0]);
 
-    var bar = chart.selectAll("g")
-        .data(data.data)
-        .enter().append("g")
-        .attr("transform", function(d, i) {
-            return "translate(" + i * barWidth + ",0)";
-        });
+  const xAxis = d3.axisBottom(xScale);
+  const yAxis = d3.axisLeft(yScale);
 
-    var tooltip = d3.select("#tooltip")
-        .style("visibility", "hidden");
+  svg
+    .append("g")
+    .attr("id", "x-axis")
+    .attr("transform", `translate(0, ${height})`)
+    .call(xAxis);
 
-    var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  svg.append("g").attr("id", "y-axis").call(yAxis);
 
-    bar.append("rect")
-        .attr("y", function(d) {
-            return y(d[1]);
-        })
-        .attr("height", function(d) {
-            return height - y(d[1]); })
-        .attr("width", barWidth)
-        .on("mouseover", function(d) {
-            tooltip.select("#gdp span").text("$" + d[1]);
-            tooltip.select("span#month").text(months[d[0].split("-")[1] - 1]);
-            tooltip.select("span#year").text(d[0].split("-")[0]);
-            tooltip.style("visibility", "visible");
-            return;
-        })
-        .on("mousemove", function() {
-            return tooltip.style("top", (d3.event.pageY - 10) + "px")
-                .style("left", (d3.event.pageX + 10) + "px");
-        })
-        .on("mouseout", function() {
-            return tooltip.style("visibility", "hidden");
-        });
+  svg
+    .selectAll(".bar")
+    .data(dataset)
+    .enter()
+    .append("rect")
+    .attr("class", "bar")
+    .attr("data-date", (d) => d[0])
+    .attr("data-gdp", (d) => d[1])
+    .attr("x", (d) => xScale(new Date(d[0])))
+    .attr("y", (d) => yScale(d[1]))
+    .attr("width", width / dataset.length)
+    .attr("height", (d) => height - yScale(d[1]))
+    .on("mouseover", showTooltip)
+    .on("mouseout", hideTooltip);
 
-    var xAxis = d3.axisBottom(x).ticks(d3.timeYear.every(5));
+  svg
+    .append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("y", 0 + margin.right)
+    .attr("x", 0 - height / 2)
+    .attr("dy", "1em")
+    .style("text-anchor", "middle")
+    .text("Gross Domestic Product");
 
-    chart.append("g")
-        .attr("class", "x axis")
-        .attr("transform", "translate(0, " + height + ")")
-        .call(xAxis);
+  d3.select("p").text(
+    "More Information: http://www.bea.gov/national/pdf/nipaguid.pdf"
+  );
 
-    var yAxis = d3.axisLeft(y);
+  const tooltip = d3.select("#tooltip");
 
-    chart.append("g")
-        .attr("class", "y axis")
-        .call(yAxis);
+  function showTooltip(event, d) {
+    tooltip
+      .style("display", "block")
+      .style("left", event.pageX + 10 + "px")
+      .style("top", event.pageY - 30 + "px")
+      .attr("data-date", d[0])
+      .html(`${d[0]}<br>${d[1]} Billion USD`);
+  }
 
-    d3.select("div#unit p").text("More Information: http://www.bea.gov/national/pdf/nipaguid.pdf");
-    
+  function hideTooltip() {
+    tooltip.style("display", "none");
+  }
 });
